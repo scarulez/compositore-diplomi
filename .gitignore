@@ -1,0 +1,17 @@
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+crash.log
+
+# Variables
+*.tfvars
+*.tfvars.json
+
+# CLI
+.override.tf
+.override.tf.json
+
+# Editor
+.vscode/
+.idea/
