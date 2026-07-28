@@ -2,16 +2,28 @@
   "name": "compositore-diplomi",
   "version": "1.0.0",
   "description": "App desktop Windows per generare diplomi personalizzati in batch.",
+  "author": "Alessandro Fabiani",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "package": "electron-builder --win --x64",
+    "package": "npm run package:installer && npm run package:portable",
+    "package:installer": "electron-builder --win nsis --x64",
     "package:portable": "electron-builder --win portable --x64"
   },
   "build": {
     "appId": "it.compositore.diplomi",
     "productName": "Compositore Diplomi",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*"
+    ],
+    "compression": "maximum",
     "win": {
+      "signtoolOptions": {
+        "publisherName": "Alessandro Fabiani"
+      },
       "target": "nsis"
     }
   },

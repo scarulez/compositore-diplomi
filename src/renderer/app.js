@@ -1,24 +1,428 @@
-const $ = (s) => document.querySelector(s);
-const state = { image: null, imagePath: null, rows: [], folder: null, selected: 0, zoom: 1, fields: [
-  { name: 'Campo 1', enabled: true, sample: 'Nome e Cognome', font: 'Georgia', size: 42, color: '#20243a', align: 'center', x: 50, y: 50 },
-  { name: 'Campo 2', enabled: false, sample: 'Titolo / Corso', font: 'Arial', size: 22, color: '#20243a', align: 'center', x: 50, y: 60 },
-  { name: 'Campo 3', enabled: false, sample: 'Data / Informazioni', font: 'Arial', size: 16, color: '#20243a', align: 'center', x: 50, y: 70 }
-] };
-let fonts = ['Arial','Georgia','Times New Roman','Verdana','Trebuchet MS','Courier New','Impact'];
-function toast(message) { $('#toast').textContent = message; $('#toast').classList.add('show'); setTimeout(() => $('#toast').classList.remove('show'), 3200); }
-function renderFields() { $('#fields').innerHTML = state.fields.map((f,i) => `<div class="field-card ${state.selected===i?'selected':''}" data-field="${i}"><div class="field-top"><input class="enabled" type="checkbox" ${f.enabled?'checked':''}><span class="field-name">${f.name}</span></div><input class="sample" value="${esc(f.sample)}" placeholder="Testo di esempio"><div class="settings"><select class="font">${fonts.map(x=>`<option ${x===f.font?'selected':''}>${x}</option>`).join('')}</select><input class="size" type="number" min="6" max="300" value="${f.size}" title="Dimensione"><input class="color" type="color" value="${f.color}" title="Colore"></div><div class="align">${[['left','≡'],['center','≡'],['right','≡']].map(([x,label])=>`<button class="al ${f.align===x?'active':''}" data-align="${x}" title="Allinea ${x}">${label}</button>`).join('')}</div></div>`).join('');
-  document.querySelectorAll('.field-card').forEach(card => { const i=+card.dataset.field, f=state.fields[i]; card.addEventListener('click',e=>{if(!e.target.matches('input,select,button')) {state.selected=i;renderFields();renderOverlays();}}); card.querySelector('.enabled').onchange=e=>{f.enabled=e.target.checked;renderOverlays();}; card.querySelector('.sample').oninput=e=>{f.sample=e.target.value;renderOverlays();}; card.querySelector('.font').onchange=e=>{f.font=e.target.value;renderOverlays();}; card.querySelector('.size').onchange=e=>{f.size=Math.max(6,+e.target.value||6);renderOverlays();}; card.querySelector('.color').oninput=e=>{f.color=e.target.value;renderOverlays();}; card.querySelectorAll('.al').forEach(b=>b.onclick=()=>{f.align=b.dataset.align;renderFields();renderOverlays();}); }); }
-function esc(v){return String(v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-function renderOverlays() { const box=$('#overlays'); box.innerHTML=''; state.fields.forEach((f,i)=>{if(!f.enabled)return;const el=document.createElement('div');el.className='overlay '+(state.selected===i?'selected':'');el.dataset.field=i;el.textContent=f.sample || f.name;Object.assign(el.style,{left:f.x+'%',top:f.y+'%',fontFamily:f.font,fontSize:scaledSize(f.size)+'px',color:f.color,textAlign:f.align,transform:f.align==='center'?'translate(-50%,-50%)':f.align==='right'?'translate(-100%,-50%)':'translate(0,-50%)'});el.addEventListener('pointerdown',startDrag);el.addEventListener('click',()=>{state.selected=i;renderFields();renderOverlays();});box.append(el);}); }
-function scaledSize(size){const img=$('#template'); return img.naturalWidth ? Math.max(8,size*(img.clientWidth/img.naturalWidth)) : size;}
-function startDrag(e){e.preventDefault();const i=+e.currentTarget.dataset.field,stage=$('#stage');state.selected=i;renderFields();const move=ev=>{const r=stage.getBoundingClientRect();state.fields[i].x=Math.max(0,Math.min(100,(ev.clientX-r.left)/r.width*100));state.fields[i].y=Math.max(0,Math.min(100,(ev.clientY-r.top)/r.height*100));renderOverlays();};const end=()=>{window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);};window.addEventListener('pointermove',move);window.addEventListener('pointerup',end);}
-async function chooseTemplate(){const p=await window.diplomi.pickFile([{name:'Immagini',extensions:['png','jpg','jpeg','webp']}]);if(!p)return;const bytes=await window.diplomi.readFile(p);const blob=new Blob([bytes]);state.image=await createImageBitmap(blob);state.imagePath=p;$('#template').src=URL.createObjectURL(blob);$('#templateName').textContent=p.split(/[\\/]/).pop();$('#template').onload=()=>{ $('#empty').classList.add('hidden');$('#stage').classList.remove('hidden');renderOverlays();refreshGenerate();};}
-async function chooseData(){const p=await window.diplomi.pickFile([{name:'Dati CSV o Excel',extensions:['csv','xlsx','xls']}]);if(!p)return;const bytes=await window.diplomi.readFile(p);try{const wb=XLSX.read(bytes,{type:'array'});const data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});state.rows=data.map(r=>[r.campo1??r.Campo1??r['Campo 1']??'',r.campo2??r.Campo2??r['Campo 2']??'',r.campo3??r.Campo3??r['Campo 3']??'']);if(!state.rows.length)throw new Error();$('#dataName').textContent=`${p.split(/[\\/]/).pop()} · ${state.rows.length} righe`;$('#dataPreview').textContent=state.rows.slice(0,3).map((r,i)=>`${i+1}. ${r.filter(Boolean).join(' · ')}`).join('\n')+(state.rows.length>3?'\n…':'');refreshGenerate();}catch{toast('Impossibile leggere il file dati. Verifica le intestazioni campo1, campo2, campo3.');}}
-async function downloadTemplate(type){const rows=[['campo1','campo2','campo3'],['Mario Rossi','Corso di Excel','23 luglio 2026'],['Giulia Bianchi','Corso di Excel','23 luglio 2026']];let base64,name;if(type==='csv'){base64=btoa(unescape(encodeURIComponent(rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\r\n'))));name='modello-diplomi.csv';}else{const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rows),'Diplomi');base64=XLSX.write(wb,{bookType:'xlsx',type:'base64'});name='modello-diplomi.xlsx';}const saved=await window.diplomi.saveFile(name,base64);if(saved)toast('Modello salvato: '+saved.split(/[\\/]/).pop());}
-async function chooseFolder(){const p=await window.diplomi.pickFolder();if(!p)return;state.folder=p;$('#folderName').textContent=p;refreshGenerate();}
-function refreshGenerate(){$('#generate').disabled=!(state.image&&state.rows.length&&state.folder);}
-function drawText(ctx,text,f,scale){ctx.save();ctx.font=`${f.size*scale}px ${f.font}`;ctx.fillStyle=f.color;ctx.textBaseline='middle';ctx.textAlign=f.align;ctx.fillText(String(text||''),f.x/100*state.image.width,f.y/100*state.image.height);ctx.restore();}
-async function generate(){const button=$('#generate');button.disabled=true;button.textContent='GENERAZIONE…';try{const canvas=document.createElement('canvas');canvas.width=state.image.width;canvas.height=state.image.height;const ctx=canvas.getContext('2d');const images=[];for(let i=0;i<state.rows.length;i++){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(state.image,0,0);state.fields.forEach((f,n)=>{if(f.enabled)drawText(ctx,state.rows[i][n]||'',f,1);});images.push({name:state.rows[i][0]||`diploma_${i+1}`,dataUrl:canvas.toDataURL('image/png')});}const count=await window.diplomi.saveImages(state.folder,images);toast(`${count} immagini create nella cartella selezionata.`);}catch(e){console.error(e);toast('Errore durante la generazione.');}finally{button.innerHTML='<span>✦</span> GENERA IMMAGINI';refreshGenerate();}}
-$('#chooseTemplate').onclick=chooseTemplate;$('#chooseData').onclick=chooseData;$('#downloadCsv').onclick=()=>downloadTemplate('csv');$('#downloadXlsx').onclick=()=>downloadTemplate('xlsx');$('#chooseFolder').onclick=chooseFolder;$('#generate').onclick=generate;$('#zoomIn').onclick=()=>setZoom(.1);$('#zoomOut').onclick=()=>setZoom(-.1);function setZoom(delta){state.zoom=Math.max(.5,Math.min(1.5,state.zoom+delta));$('#stage').style.transform=`scale(${state.zoom})`;$('#zoomLabel').textContent=Math.round(state.zoom*100)+'%';}
+const $ = (selector) => document.querySelector(selector);
+
+const state = {
+  image: null,
+  imagePath: null,
+  rows: [],
+  folder: null,
+  selected: 0,
+  zoom: 1,
+  fields: [createField(0, true)],
+  fileNameConfig: { prefix: '', separator: ' ', fieldIndexes: [0] }
+};
+
+let fonts = ['Arial', 'Georgia', 'Times New Roman', 'Verdana', 'Trebuchet MS', 'Courier New', 'Impact'];
+
+function createField(index, enabled = false) {
+  return {
+    name: `Campo ${index + 1}`,
+    enabled,
+    sample: index === 0 ? 'Nome e Cognome' : `Testo campo ${index + 1}`,
+    font: index === 0 ? 'Georgia' : 'Arial',
+    size: index === 0 ? 42 : 22,
+    color: '#20243a',
+    align: 'center',
+    x: 50,
+    y: Math.min(90, 50 + index * 10)
+  };
+}
+
+function toast(message) {
+  $('#toast').textContent = message;
+  $('#toast').classList.add('show');
+  setTimeout(() => $('#toast').classList.remove('show'), 3200);
+}
+
+function fieldHeaders() {
+  return state.fields.map((_field, index) => `campo${index + 1}`);
+}
+
+function resizeRows() {
+  state.rows = state.rows.map((row) => Array.from(
+    { length: state.fields.length },
+    (_value, index) => row[index] ?? ''
+  ));
+}
+
+function normalizeSelection() {
+  state.selected = Math.max(0, Math.min(state.selected, state.fields.length - 1));
+}
+
+function normalizeFileNameConfig() {
+  state.fileNameConfig.fieldIndexes = selectedNameIndexes();
+}
+
+function renderFields() {
+  $('#fields').innerHTML = state.fields.map((field, index) => `
+    <div class="field-card ${state.selected === index ? 'selected' : ''}" data-field="${index}">
+      <div class="field-top">
+        <input class="enabled" type="checkbox" ${field.enabled ? 'checked' : ''} title="Includi nell'immagine generata">
+        <span class="field-name">${esc(field.name)}</span>
+        ${state.fields.length > 1 ? '<button class="remove-field" type="button" title="Rimuovi campo" aria-label="Rimuovi campo">×</button>' : ''}
+      </div>
+      <input class="sample" value="${esc(field.sample)}" placeholder="Testo di esempio">
+      <div class="settings">
+        <select class="font">${fonts.map((font) => `<option ${font === field.font ? 'selected' : ''}>${esc(font)}</option>`).join('')}</select>
+        <input class="size" type="number" min="6" max="300" value="${field.size}" title="Dimensione">
+        <input class="color" type="color" value="${field.color}" title="Colore">
+      </div>
+      <div class="align">${[['left', '≡'], ['center', '≡'], ['right', '≡']].map(([align, label]) => `<button class="al ${field.align === align ? 'active' : ''}" data-align="${align}" type="button" title="Allinea ${align}">${label}</button>`).join('')}</div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.field-card').forEach((card) => {
+    const index = Number(card.dataset.field);
+    const field = state.fields[index];
+    card.addEventListener('click', (event) => {
+      if (!event.target.matches('input, select, button')) {
+        state.selected = index;
+        renderFields();
+        renderOverlays();
+      }
+    });
+    card.querySelector('.enabled').onchange = (event) => {
+      field.enabled = event.target.checked;
+      renderOverlays();
+    };
+    card.querySelector('.sample').oninput = (event) => {
+      field.sample = event.target.value;
+      renderOverlays();
+    };
+    card.querySelector('.font').onchange = (event) => {
+      field.font = event.target.value;
+      renderOverlays();
+    };
+    card.querySelector('.size').onchange = (event) => {
+      field.size = Math.max(6, Number(event.target.value) || 6);
+      renderOverlays();
+    };
+    card.querySelector('.color').oninput = (event) => {
+      field.color = event.target.value;
+      renderOverlays();
+    };
+    card.querySelectorAll('.al').forEach((button) => {
+      button.onclick = () => {
+        field.align = button.dataset.align;
+        renderFields();
+        renderOverlays();
+      };
+    });
+    card.querySelector('.remove-field')?.addEventListener('click', () => removeField(index));
+  });
+}
+
+function addField() {
+  state.fields.push(createField(state.fields.length, true));
+  state.selected = state.fields.length - 1;
+  resizeRows();
+  renderFields();
+  renderOverlays();
+}
+
+function removeField(index) {
+  if (state.fields.length === 1) return;
+  state.fields.splice(index, 1);
+  state.rows = state.rows.map((row) => row.filter((_value, rowIndex) => rowIndex !== index));
+  state.fields.forEach((field, fieldIndex) => { field.name = `Campo ${fieldIndex + 1}`; });
+  state.fileNameConfig.fieldIndexes = state.fileNameConfig.fieldIndexes
+    .filter((fieldIndex) => fieldIndex !== index)
+    .map((fieldIndex) => fieldIndex > index ? fieldIndex - 1 : fieldIndex);
+  normalizeFileNameConfig();
+  normalizeSelection();
+  renderFields();
+  renderOverlays();
+  refreshGenerate();
+}
+
+function alignFieldsWithData(columnCount) {
+  const oldCount = state.fields.length;
+  if (columnCount < oldCount) {
+    state.fields = state.fields.slice(0, columnCount);
+  } else {
+    while (state.fields.length < columnCount) state.fields.push(createField(state.fields.length, false));
+  }
+  state.fields.forEach((field, index) => { field.name = `Campo ${index + 1}`; });
+  normalizeFileNameConfig();
+  normalizeSelection();
+  return oldCount !== state.fields.length;
+}
+
+function esc(value) {
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function selectedNameIndexes(config = state.fileNameConfig) {
+  const indexes = config.fieldIndexes.filter((index) => index >= 0 && index < state.fields.length);
+  return indexes.length ? indexes : [0];
+}
+
+function buildFileName(row, index, config = state.fileNameConfig) {
+  const parts = [];
+  const prefix = String(config.prefix || '').trim();
+  if (prefix) parts.push(prefix);
+  selectedNameIndexes(config).forEach((fieldIndex) => {
+    const value = String(row[fieldIndex] ?? '').trim();
+    if (value) parts.push(value);
+  });
+  return parts.join(config.separator) || `diploma_${index + 1}`;
+}
+
+function renderNameFields() {
+  const selected = new Set(selectedNameIndexes());
+  $('#nameFields').innerHTML = state.fields.map((field, index) => `
+    <label class="name-field">
+      <input type="checkbox" value="${index}" ${selected.has(index) ? 'checked' : ''}>
+      <span>${esc(field.name)}</span>
+      <small>${esc(field.sample || `campo${index + 1}`)}</small>
+    </label>
+  `).join('');
+  document.querySelectorAll('#nameFields input').forEach((input) => {
+    input.onchange = updateNamePreview;
+  });
+}
+
+function modalNameConfig() {
+  const fieldIndexes = [...document.querySelectorAll('#nameFields input:checked')].map((input) => Number(input.value));
+  return {
+    prefix: $('#filePrefix').value,
+    separator: $('#fileSeparator').value,
+    fieldIndexes: fieldIndexes.length ? fieldIndexes : [0]
+  };
+}
+
+function updateNamePreview() {
+  const name = buildFileName(state.rows[0] || [], 0, modalNameConfig());
+  $('#namePreview').textContent = `Anteprima: ${name}.png`;
+}
+
+function openNameModal() {
+  $('#filePrefix').value = state.fileNameConfig.prefix;
+  $('#fileSeparator').value = state.fileNameConfig.separator;
+  renderNameFields();
+  updateNamePreview();
+  $('#nameModal').classList.remove('hidden');
+  setTimeout(() => $('#filePrefix').focus(), 0);
+}
+
+function closeNameModal() {
+  $('#nameModal').classList.add('hidden');
+}
+
+function confirmNameModal() {
+  state.fileNameConfig = modalNameConfig();
+  closeNameModal();
+  generate();
+}
+
+function renderOverlays() {
+  const box = $('#overlays');
+  box.innerHTML = '';
+  state.fields.forEach((field, index) => {
+    if (!field.enabled) return;
+    const element = document.createElement('div');
+    element.className = `overlay ${state.selected === index ? 'selected' : ''}`;
+    element.dataset.field = index;
+    element.textContent = field.sample || field.name;
+    Object.assign(element.style, {
+      left: `${field.x}%`, top: `${field.y}%`, fontFamily: field.font,
+      fontSize: `${scaledSize(field.size)}px`, color: field.color, textAlign: field.align,
+      transform: field.align === 'center' ? 'translate(-50%,-50%)' : field.align === 'right' ? 'translate(-100%,-50%)' : 'translate(0,-50%)'
+    });
+    element.addEventListener('pointerdown', startDrag);
+    element.addEventListener('click', () => {
+      state.selected = index;
+      renderFields();
+      renderOverlays();
+    });
+    box.append(element);
+  });
+}
+
+function scaledSize(size) {
+  const image = $('#template');
+  return image.naturalWidth ? Math.max(8, size * (image.clientWidth / image.naturalWidth)) : size;
+}
+
+function startDrag(event) {
+  event.preventDefault();
+  const index = Number(event.currentTarget.dataset.field);
+  const stage = $('#stage');
+  state.selected = index;
+  renderFields();
+  const move = (moveEvent) => {
+    const rect = stage.getBoundingClientRect();
+    state.fields[index].x = Math.max(0, Math.min(100, (moveEvent.clientX - rect.left) / rect.width * 100));
+    state.fields[index].y = Math.max(0, Math.min(100, (moveEvent.clientY - rect.top) / rect.height * 100));
+    renderOverlays();
+  };
+  const end = () => {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', end);
+  };
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', end);
+}
+
+async function chooseTemplate() {
+  const filePath = await window.diplomi.pickFile([{ name: 'Immagini', extensions: ['png', 'jpg', 'jpeg', 'webp'] }]);
+  if (!filePath) return;
+  const bytes = await window.diplomi.readFile(filePath);
+  const blob = new Blob([bytes]);
+  state.image = await createImageBitmap(blob);
+  state.imagePath = filePath;
+  $('#template').src = URL.createObjectURL(blob);
+  $('#templateName').textContent = filePath.split(/[\\/]/).pop();
+  $('#template').onload = () => {
+    $('#empty').classList.add('hidden');
+    $('#stage').classList.remove('hidden');
+    renderOverlays();
+    refreshGenerate();
+  };
+}
+
+function sheetRows(workbook) {
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', blankrows: false });
+}
+
+async function chooseData() {
+  const filePath = await window.diplomi.pickFile([{ name: 'Dati CSV o Excel', extensions: ['csv', 'xlsx', 'xls'] }]);
+  if (!filePath) return;
+  try {
+    const bytes = await window.diplomi.readFile(filePath);
+    const rawRows = sheetRows(XLSX.read(bytes, { type: 'array' }));
+    importDataRows(rawRows, filePath.split(/[\\/]/).pop());
+  } catch (error) {
+    console.error(error);
+    toast('Impossibile leggere il file dati. Verifica che la prima riga contenga le intestazioni.');
+  }
+}
+
+function importDataRows(rawRows, fileName) {
+  if (!rawRows.length) throw new Error('File senza intestazioni');
+  const columnCount = Math.max(...rawRows.map((row) => row.length));
+  if (!columnCount) throw new Error('File senza colonne');
+  const dataRows = rawRows.slice(1).filter((row) => row.some((value) => String(value).trim() !== ''));
+  const configurationChanged = alignFieldsWithData(columnCount);
+  state.rows = dataRows.map((row) => Array.from({ length: columnCount }, (_value, index) => row[index] ?? ''));
+  $('#dataName').textContent = `${fileName} · ${state.rows.length} righe · ${columnCount} campi`;
+  $('#dataPreview').textContent = state.rows.length
+    ? state.rows.slice(0, 3).map((row, index) => `${index + 1}. ${row.filter(Boolean).join(' · ')}`).join('\n') + (state.rows.length > 3 ? '\n…' : '')
+    : 'Nessuna riga dati: la configurazione dei campi è stata comunque aggiornata.';
+  renderFields();
+  renderOverlays();
+  refreshGenerate();
+  if (configurationChanged) toast(`Configurazione adattata a ${columnCount} campi.`);
+  return { columnCount, rowCount: state.rows.length, configurationChanged };
+}
+
+async function downloadTemplate(type) {
+  const rows = templateRows();
+  let base64;
+  let name;
+  if (type === 'csv') {
+    const csv = rows.map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    base64 = btoa(unescape(encodeURIComponent(`\ufeff${csv}`)));
+    name = 'modello-diplomi.csv';
+  } else {
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, XLSX.utils.aoa_to_sheet(rows), 'Diplomi');
+    base64 = XLSX.write(workbook, { bookType: 'xlsx', type: 'base64' });
+    name = 'modello-diplomi.xlsx';
+  }
+  const saved = await window.diplomi.saveFile(name, base64);
+  if (saved) toast(`Modello salvato: ${saved.split(/[\\/]/).pop()}`);
+}
+
+function templateRows() {
+  return [
+    fieldHeaders(),
+    state.fields.map((field, index) => field.sample || `Esempio ${index + 1}`),
+    state.fields.map((_field, index) => `Esempio ${index + 1}`)
+  ];
+}
+
+async function chooseFolder() {
+  const folder = await window.diplomi.pickFolder();
+  if (!folder) return;
+  state.folder = folder;
+  $('#folderName').textContent = folder;
+  refreshGenerate();
+}
+
+function refreshGenerate() {
+  $('#generate').disabled = !(state.image && state.rows.length && state.folder);
+}
+
+function drawText(context, text, field, scale) {
+  context.save();
+  context.font = `${field.size * scale}px ${field.font}`;
+  context.fillStyle = field.color;
+  context.textBaseline = 'middle';
+  context.textAlign = field.align;
+  context.fillText(String(text || ''), field.x / 100 * state.image.width, field.y / 100 * state.image.height);
+  context.restore();
+}
+
+async function generate() {
+  const button = $('#generate');
+  button.disabled = true;
+  button.textContent = 'GENERAZIONE…';
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = state.image.width;
+    canvas.height = state.image.height;
+    const context = canvas.getContext('2d');
+    const images = [];
+    for (let index = 0; index < state.rows.length; index++) {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(state.image, 0, 0);
+      state.fields.forEach((field, fieldIndex) => {
+        if (field.enabled) drawText(context, state.rows[index][fieldIndex] || '', field, 1);
+      });
+      images.push({ name: buildFileName(state.rows[index], index), dataUrl: canvas.toDataURL('image/png') });
+    }
+    const count = await window.diplomi.saveImages(state.folder, images);
+    toast(`${count} immagini create nella cartella selezionata.`);
+  } catch (error) {
+    console.error(error);
+    toast('Errore durante la generazione.');
+  } finally {
+    button.innerHTML = '<span>✦</span> GENERA IMMAGINI';
+    refreshGenerate();
+  }
+}
+
+function setZoom(delta) {
+  state.zoom = Math.max(0.5, Math.min(1.5, state.zoom + delta));
+  $('#stage').style.transform = `scale(${state.zoom})`;
+  $('#zoomLabel').textContent = `${Math.round(state.zoom * 100)}%`;
+}
+
+$('#addField').onclick = addField;
+$('#chooseTemplate').onclick = chooseTemplate;
+$('#chooseData').onclick = chooseData;
+$('#downloadCsv').onclick = () => downloadTemplate('csv');
+$('#downloadXlsx').onclick = () => downloadTemplate('xlsx');
+$('#chooseFolder').onclick = chooseFolder;
+$('#generate').onclick = openNameModal;
+$('#filePrefix').oninput = updateNamePreview;
+$('#fileSeparator').onchange = updateNamePreview;
+$('#closeNameModal').onclick = closeNameModal;
+$('#cancelGenerate').onclick = closeNameModal;
+$('#confirmGenerate').onclick = confirmNameModal;
+$('#nameModal').addEventListener('click', (event) => {
+  if (event.target.id === 'nameModal') closeNameModal();
+});
+window.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeNameModal();
+});
+$('#zoomIn').onclick = () => setZoom(0.1);
+$('#zoomOut').onclick = () => setZoom(-0.1);
+
 renderFields();
-window.diplomi.getSystemFonts().then(systemFonts=>{if(systemFonts.length){fonts=[...new Set([...fonts,...systemFonts])].sort((a,b)=>a.localeCompare(b));renderFields();}}).catch(()=>{});
+window.diplomi.getSystemFonts().then((systemFonts) => {
+  if (!systemFonts.length) return;
+  fonts = [...new Set([...fonts, ...systemFonts])].sort((first, second) => first.localeCompare(second));
+  renderFields();
+}).catch(() => {});
