@@ -1,17 +1,48 @@
-# Terraform
-.terraform/
-terraform.tfstate
-terraform.tfstate.*
-crash.log
+```
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.python-version
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
-# Variables
-*.tfvars
-*.tfvars.json
+# Dependencies
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
 
-# CLI
-.override.tf
-.override.tf.json
+# Environment
+.env
+.env.local
+.env.dev
+.env.prod
+.env.backup
+.env.example
+.env.sample
+.env.template
+.env.default
 
-# Editor
-.vscode/
-.idea/
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+```
