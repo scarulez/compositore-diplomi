@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compositore Diplomi</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header><div class="brand"><span class="mark">✦</span><div><h1>Compositore Diplomi</h1><p>Personalizza e genera i tuoi diplomi in serie</p></div></div><span id="status" class="status">Pronto</span></header>
+  <main>
+    <aside class="panel controls">
+      <section><div class="section-title"><span>1</span> Immagine modello</div><button id="chooseTemplate" class="choose">SCEGLI IMMAGINE</button><p id="templateName" class="hint">Nessun file selezionato</p></section>
+      <section><div class="section-title"><span>2</span> Campi di testo</div><p class="hint">Seleziona un campo, quindi trascinalo sull’anteprima.</p><div id="fields"></div></section>
+      <section><div class="section-title"><span>3</span> Dati variabili</div><div class="data-actions"><button id="chooseData" class="choose">IMPORTA DATI</button><div class="template-actions"><span>Modello:</span><button id="downloadCsv" title="Scarica modello CSV">CSV</button><button id="downloadXlsx" title="Scarica modello Excel">EXCEL</button></div></div><p id="dataName" class="hint">CSV o Excel (.xls, .xlsx)</p><div id="dataPreview" class="data-preview"></div></section>
+      <section><div class="section-title"><span>4</span> Destinazione</div><button id="chooseFolder" class="choose">SCEGLI CARTELLA</button><p id="folderName" class="hint">Nessuna cartella selezionata</p></section>
+      <button id="generate" class="generate" disabled><span>✦</span> GENERA IMMAGINI</button>
+    </aside>
+    <section class="workspace">
+      <div class="workspace-head"><div><h2>Anteprima diploma</h2><p>La posizione è salvata in percentuale e resta precisa anche sull’immagine originale.</p></div><div class="zoom"><button id="zoomOut" title="Riduci">−</button><span id="zoomLabel">100%</span><button id="zoomIn" title="Ingrandisci">+</button></div></div>
+      <div id="previewArea" class="preview-area"><div id="empty" class="empty"><div class="empty-icon">▧</div><h3>Carica l’immagine del diploma</h3><p>PNG, JPG, JPEG o WebP</p></div><div id="stage" class="stage hidden"><img id="template" draggable="false" /><div id="overlays"></div></div></div>
+      <div class="bottom-tip">Suggerimento: fai clic su un testo per selezionarlo, poi trascinalo nella posizione desiderata.</div>
+    </section>
+  </main>
+  <div id="toast" class="toast"></div>
+  <script src="../../node_modules/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

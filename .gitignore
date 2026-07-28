@@ -1,0 +1,4 @@
+node_modules/
+dist/
+dist-portable/
+.DS_Store
