@@ -11,7 +11,7 @@
   <main>
     <aside class="panel controls">
       <section><div class="section-title"><span>1</span> Immagine modello</div><button id="chooseTemplate" class="choose">SCEGLI IMMAGINE</button><p id="templateName" class="hint">Nessun file selezionato</p></section>
-      <section><div class="section-title"><span>2</span> Campi di testo</div><p class="hint">Seleziona un campo, quindi trascinalo sull’anteprima.</p><div id="fields"></div></section>
+      <section><div class="fields-heading"><div class="section-title"><span>2</span> Campi di testo</div><button id="addField" class="add-field" type="button" title="Aggiungi un campo di testo">＋ CAMPO</button></div><p class="hint">Seleziona un campo, quindi trascinalo sull’anteprima.</p><div id="fields"></div></section>
       <section><div class="section-title"><span>3</span> Dati variabili</div><div class="data-actions"><button id="chooseData" class="choose">IMPORTA DATI</button><div class="template-actions"><span>Modello:</span><button id="downloadCsv" title="Scarica modello CSV">CSV</button><button id="downloadXlsx" title="Scarica modello Excel">EXCEL</button></div></div><p id="dataName" class="hint">CSV o Excel (.xls, .xlsx)</p><div id="dataPreview" class="data-preview"></div></section>
       <section><div class="section-title"><span>4</span> Destinazione</div><button id="chooseFolder" class="choose">SCEGLI CARTELLA</button><p id="folderName" class="hint">Nessuna cartella selezionata</p></section>
       <button id="generate" class="generate" disabled><span>✦</span> GENERA IMMAGINI</button>
@@ -22,6 +22,26 @@
       <div class="bottom-tip">Suggerimento: fai clic su un testo per selezionarlo, poi trascinalo nella posizione desiderata.</div>
     </section>
   </main>
+  <div id="nameModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="nameModalTitle">Nome file generati</h3>
+        <button id="closeNameModal" class="icon-button" type="button" title="Chiudi">×</button>
+      </div>
+      <label class="modal-label" for="filePrefix">Prefisso</label>
+      <input id="filePrefix" class="modal-input" type="text" placeholder="Es. diploma">
+      <div class="modal-grid">
+        <label><span>Separatore</span><select id="fileSeparator"><option value=" ">Spazio</option><option value="-">-</option><option value="_">_</option></select></label>
+      </div>
+      <div class="modal-label">Campi nel nome</div>
+      <div id="nameFields" class="name-fields"></div>
+      <p id="namePreview" class="name-preview"></p>
+      <div class="modal-actions">
+        <button id="cancelGenerate" class="secondary" type="button">ANNULLA</button>
+        <button id="confirmGenerate" class="primary" type="button">GENERA</button>
+      </div>
+    </div>
+  </div>
   <div id="toast" class="toast"></div>
   <script src="../../node_modules/xlsx/dist/xlsx.full.min.js"></script>
   <script src="app.js"></script>

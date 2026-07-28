@@ -5,10 +5,10 @@ Applicazione desktop Windows per creare in batch immagini di diplomi o attestati
 ## Funzionalità
 
 - Importa un modello immagine in formato PNG, JPG o WebP.
-- Configura fino a tre campi di testo: posizione, font, dimensione, colore e allineamento.
+- Configura un numero libero di campi di testo: posizione, font, dimensione, colore e allineamento.
 - Posiziona i campi trascinandoli direttamente sull'anteprima.
 - Importa i dati da CSV o Excel (`.xlsx` e `.xls`).
-- Esporta un'immagine PNG per ogni riga di dati, con nomi file sicuri e non duplicati.
+- Esporta un'immagine PNG per ogni riga di dati, con nome file componibile e non duplicato.
 - Scarica dall'app un modello CSV o Excel pronto da compilare.
 
 ## Requisiti
@@ -25,25 +25,44 @@ npm start
 
 ## Formato dei dati
 
-Il file CSV o Excel deve contenere, nella prima riga, le colonne `campo1`, `campo2` e `campo3`. Le colonne non utilizzate possono rimanere vuote.
+Il file CSV o Excel deve contenere nella prima riga le intestazioni delle colonne. L'app usa
+l'ordine delle colonne e adatta automaticamente il numero di campi visualizzati al numero di
+campi importati. I modelli scaricati dall'app usano le intestazioni `campo1`, `campo2`, ecc.
 
 ```csv
-campo1,campo2,campo3
-Mario Rossi,Corso di Excel,23 luglio 2026
-Giulia Bianchi,Corso di Excel,23 luglio 2026
+campo1,campo2
+Mario Rossi,Corso di Excel
+Giulia Bianchi,Corso di Excel
 ```
 
 ## Uso
 
 1. Seleziona l'immagine modello.
-2. Configura e abilita i campi desiderati; trascinali sull'anteprima per definirne la posizione.
+2. Aggiungi o rimuovi i campi desiderati, configurali e trascinali sull'anteprima per definirne la posizione.
 3. Importa il file dati oppure scarica uno dei modelli predisposti nell'app.
 4. Scegli la cartella di destinazione.
-5. Premi **GENERA IMMAGINI**.
+5. Premi **GENERA IMMAGINI** e scegli prefisso, campi e separatore per il nome dei file.
 
-Il nome di ogni PNG viene ricavato da `campo1`; se mancante, viene generato automaticamente.
+La maschera di generazione usa `campo1` come default, ma puoi aggiungere uno o piu campi
+al nome del file e scegliere come separarli: spazio, trattino o underscore. Se un valore e
+vuoto viene saltato; se non rimane alcun valore viene generato un nome automatico.
 
 ## Creazione del pacchetto Windows
+
+Dalla root del progetto esegui lo script PowerShell, che pulisce `dist` e produce sia setup
+sia portable:
+
+```powershell
+.\build.ps1
+```
+
+Per conservare gli artefatti esistenti nella cartella `dist`:
+
+```powershell
+.\build.ps1 -KeepPrevious
+```
+
+In alternativa:
 
 ```powershell
 npm run package
@@ -54,5 +73,8 @@ L'installer NSIS viene generato nella cartella `dist`. Per creare un eseguibile 
 ```powershell
 npm run package:portable
 ```
+
+Anche l'eseguibile portabile viene generato nella cartella `dist`. Il comando
+`npm run package` genera insieme sia il setup sia il portable.
 
 Gli artefatti di build non sono versionati.
