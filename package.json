@@ -7,8 +7,8 @@
   "scripts": {
     "start": "electron .",
     "package": "npm run package:installer && npm run package:portable",
-    "package:installer": "electron-builder --win nsis --x64",
-    "package:portable": "electron-builder --win portable --x64"
+    "package:installer": "electron-builder --win nsis --x64 --publish never",
+    "package:portable": "electron-builder --win portable --x64 --publish never"
   },
   "build": {
     "appId": "it.compositore.diplomi",
