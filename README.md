@@ -1,75 +1,58 @@
-# Diploma Batch Generator
+# Compositore Diplomi
 
-Una applicazione desktop Windows per generare massivamente diplomi personalizzati.
+Applicazione desktop Windows per creare in batch immagini di diplomi o attestati personalizzati a partire da un modello grafico e da un elenco di partecipanti.
 
 ## Funzionalità
 
-- **Template Image**: Carica un'immagine statica come base per i diplomi
-- **Data File**: Supporta file TXT, CSV e XLS/XLSX con i dati variabili
-  - Ogni riga rappresenta un diploma da generare
-  - Fino a 3 campi di testo configurabili (campo1, campo2, campo3)
-- **Text Fields Configuration**: Per ciascuno dei 3 campi:
-  - Abilita/Disabilita il campo
-  - Posizione X e Y sull'immagine
-  - Font selezionabile
-  - Dimensione del font
-  - Allineamento (sinistra, centro, destra)
-  - Colore del testo (con color picker)
-- **Output Folder**: Scegli la cartella dove salvare le immagini generate
-- **Preview**: Anteprima dell'immagine template e dei dati caricati
-- **Progress Bar**: Barra di avanzamento durante la generazione
-
-## Installazione
-
-```bash
-pip install -r requirements.txt
-```
-
-## Utilizzo
-
-```bash
-python diploma_generator.py
-```
-
-## Formato File di Input
-
-### TXT
-Ogni riga contiene i valori separati da virgola:
-```
-Nome Cognome,Data,Corso
-Mario Rossi,01/01/2024,Python Base
-Luca Bianchi,02/01/2024,JavaScript Avanzato
-```
-
-### CSV
-Stesso formato del TXT, con intestazioni opzionali:
-```csv
-name,date,course
-Mario Rossi,01/01/2024,Python Base
-Luca Bianchi,02/01/2024,JavaScript Avanzato
-```
-
-### Excel (XLSX/XLS)
-Tre colonne con i dati per ciascun diploma.
-
-## Come Funziona
-
-1. Seleziona l'immagine template del diploma
-2. Carica il file con i dati (TXT, CSV o XLSX)
-3. Configura i 3 campi di testo:
-   - Posizione (coordinate X, Y)
-   - Font e dimensione
-   - Allineamento
-   - Colore
-4. Scegli la cartella di output
-5. Clicca su "GENERATE DIPLOMAS"
-
-Le immagini verranno salvate come `diploma_0001.png`, `diploma_0002.png`, ecc.
+- Importa un modello immagine in formato PNG, JPG o WebP.
+- Configura fino a tre campi di testo: posizione, font, dimensione, colore e allineamento.
+- Posiziona i campi trascinandoli direttamente sull'anteprima.
+- Importa i dati da CSV o Excel (`.xlsx` e `.xls`).
+- Esporta un'immagine PNG per ogni riga di dati, con nomi file sicuri e non duplicati.
+- Scarica dall'app un modello CSV o Excel pronto da compilare.
 
 ## Requisiti
 
-- Python 3.8+
-- Windows (consigliato per i font di sistema)
-- Pillow
-- pandas
-- openpyxl
+- Windows 10 o successivo.
+- [Node.js](https://nodejs.org/) LTS per eseguire l'app dai sorgenti.
+
+## Avvio in sviluppo
+
+```powershell
+npm install
+npm start
+```
+
+## Formato dei dati
+
+Il file CSV o Excel deve contenere, nella prima riga, le colonne `campo1`, `campo2` e `campo3`. Le colonne non utilizzate possono rimanere vuote.
+
+```csv
+campo1,campo2,campo3
+Mario Rossi,Corso di Excel,23 luglio 2026
+Giulia Bianchi,Corso di Excel,23 luglio 2026
+```
+
+## Uso
+
+1. Seleziona l'immagine modello.
+2. Configura e abilita i campi desiderati; trascinali sull'anteprima per definirne la posizione.
+3. Importa il file dati oppure scarica uno dei modelli predisposti nell'app.
+4. Scegli la cartella di destinazione.
+5. Premi **GENERA IMMAGINI**.
+
+Il nome di ogni PNG viene ricavato da `campo1`; se mancante, viene generato automaticamente.
+
+## Creazione del pacchetto Windows
+
+```powershell
+npm run package
+```
+
+L'installer NSIS viene generato nella cartella `dist`. Per creare un eseguibile portabile:
+
+```powershell
+npm run package:portable
+```
+
+Gli artefatti di build non sono versionati.

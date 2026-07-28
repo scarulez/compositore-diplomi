@@ -1,0 +1,28 @@
+{
+  "name": "compositore-diplomi",
+  "version": "1.0.0",
+  "description": "App desktop Windows per generare diplomi personalizzati in batch.",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-builder --win --x64",
+    "package:portable": "electron-builder --win portable --x64"
+  },
+  "build": {
+    "appId": "it.compositore.diplomi",
+    "productName": "Compositore Diplomi",
+    "win": {
+      "target": "nsis"
+    }
+  },
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^37.10.3",
+    "electron-builder": "^26.0.12"
+  },
+  "allowScripts": {
+    "electron@37.10.3": true
+  }
+}
