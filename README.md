@@ -19,17 +19,17 @@ La composizione del nome dei file permette di scegliere prefisso, campi e separa
 - Esporta un'immagine PNG per ogni riga di dati, con nome file componibile e non duplicato.
 - Scarica dall'app un modello CSV o Excel pronto da compilare.
 
-## Requisiti
+## Uso
 
-- Windows 10 o successivo.
-- [Node.js](https://nodejs.org/) LTS per eseguire l'app dai sorgenti.
+1. Seleziona l'immagine modello.
+2. Aggiungi o rimuovi i campi desiderati, configurali e trascinali sull'anteprima per definirne la posizione.
+3. Importa il file dati oppure scarica uno dei modelli predisposti nell'app.
+4. Scegli la cartella di destinazione.
+5. Premi **GENERA IMMAGINI** e scegli prefisso, campi e separatore per il nome dei file.
 
-## Avvio in sviluppo
-
-```powershell
-npm install
-npm start
-```
+La maschera di generazione usa `campo1` come default, ma puoi aggiungere uno o più campi
+al nome del file e scegliere come separarli: spazio, trattino o underscore. Se un valore è
+vuoto viene saltato; se non rimane alcun valore viene generato un nome automatico.
 
 ## Formato dei dati
 
@@ -43,19 +43,35 @@ Mario Rossi,Corso di Excel
 Giulia Bianchi,Corso di Excel
 ```
 
-## Uso
+## Scarica l'applicazione
 
-1. Seleziona l'immagine modello.
-2. Aggiungi o rimuovi i campi desiderati, configurali e trascinali sull'anteprima per definirne la posizione.
-3. Importa il file dati oppure scarica uno dei modelli predisposti nell'app.
-4. Scegli la cartella di destinazione.
-5. Premi **GENERA IMMAGINI** e scegli prefisso, campi e separatore per il nome dei file.
+Nella pagina [Releases](https://github.com/scarulez/compositore-diplomi/releases/latest)
+sono disponibili entrambe le versioni per Windows:
 
-La maschera di generazione usa `campo1` come default, ma puoi aggiungere uno o piu campi
-al nome del file e scegliere come separarli: spazio, trattino o underscore. Se un valore e
-vuoto viene saltato; se non rimane alcun valore viene generato un nome automatico.
+- **Setup**, per installare normalmente l'applicazione.
+- **Portable**, da avviare direttamente senza installazione.
 
-## Creazione del pacchetto Windows
+Per utilizzare una delle versioni pubblicate non è necessario installare Node.js o scaricare
+il codice sorgente.
+
+## Sviluppo e verifica manuale
+
+Questa sezione è destinata a chi vuole eseguire l'app dai sorgenti, controllarne il codice o
+generare personalmente i pacchetti Windows.
+
+### Requisiti
+
+- Windows 10 o successivo.
+- [Node.js](https://nodejs.org/) LTS.
+
+### Avvio dai sorgenti
+
+```powershell
+npm install
+npm start
+```
+
+### Creazione dei pacchetti Windows
 
 Dalla root del progetto esegui lo script PowerShell, che pulisce `dist` e produce sia setup
 sia portable:
