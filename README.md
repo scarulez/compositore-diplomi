@@ -2,6 +2,14 @@
 
 Applicazione desktop Windows per creare in batch immagini di diplomi o attestati personalizzati a partire da un modello grafico e da un elenco di partecipanti.
 
+## Anteprima
+
+![Interfaccia principale di Compositore Diplomi](docs/screenshots/app-principale.png)
+
+La composizione del nome dei file permette di scegliere prefisso, campi e separatore:
+
+![Maschera per comporre il nome dei file generati](docs/screenshots/composizione-nome-file.png)
+
 ## Funzionalità
 
 - Importa un modello immagine in formato PNG, JPG o WebP.
