@@ -3,3 +3,4 @@
 .modal-backdrop.hidden{display:none}
 .modal-grid input{width:100%;border:1px solid #dfe3ea;border-radius:6px;padding:9px 10px;background:#fff;color:#26334f;font:13px 'DM Sans'}.modal-name-parts{grid-template-columns:1fr 1fr}
 .text-style{display:flex;gap:4px;margin-top:7px}.text-style .style{width:31px;height:27px;border:1px solid #e0e4ec;border-radius:5px;background:#fff;color:#68748d;cursor:pointer}.text-style .style.active{background:#7354d8;border-color:#7354d8;color:#fff}
+.quality-row{margin-top:2px}.quality-row .modal-label{margin:12px 0 8px}#jpgQuality{display:block;width:100%;margin:0;accent-color:#7354d8;cursor:pointer}.range-ticks{display:flex;justify-content:space-between;color:#8490a6;font-size:11px;margin-top:5px}.quality-hint{margin:9px 0 0;color:#8490a6;font-size:11px;line-height:1.45}.modal-actions{margin-top:18px}

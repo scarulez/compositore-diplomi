@@ -42,18 +42,19 @@ ipcMain.handle('get-system-fonts', async () => {
   const lists = await Promise.all([query('HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts'), query('HKCU\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts')]);
   return [...new Set(lists.flat().map(name => name.replace(/\s*\((?:TrueType|OpenType)\)$/i, '').replace(/\s+(?:Bold|Italic|Regular|Light|Medium|Semibold|Black)(?:\s+(?:Italic|Oblique))?$/i, '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
 });
-ipcMain.handle('save-images', async (_event, folder, images) => {
+ipcMain.handle('save-images', async (_event, folder, images, extension) => {
   await fs.mkdir(folder, { recursive: true });
+  const ext = extension === 'jpg' ? 'jpg' : 'png';
   const used = new Set();
   const safeName = (name, index) => {
     let base = String(name || `diploma_${index + 1}`).replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim() || `diploma_${index + 1}`;
     let candidate = base, n = 2;
     while (used.has(candidate.toLowerCase())) candidate = `${base}_${n++}`;
     used.add(candidate.toLowerCase());
-    return `${candidate}.png`;
+    return `${candidate}.${ext}`;
   };
   for (let i = 0; i < images.length; i++) {
-    const payload = images[i].dataUrl.replace(/^data:image\/png;base64,/, '');
+    const payload = images[i].dataUrl.replace(/^data:image\/\w+;base64,/, '');
     await fs.writeFile(path.join(folder, safeName(images[i].name, i)), Buffer.from(payload, 'base64'));
   }
   return images.length;

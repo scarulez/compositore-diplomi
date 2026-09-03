@@ -8,10 +8,21 @@ const state = {
   selected: 0,
   zoom: 1,
   fields: [createField(0, true)],
-  fileNameConfig: { prefix: '', suffix: '', separator: ' ', fieldIndexes: [0] }
+  fileNameConfig: { prefix: '', suffix: '', separator: ' ', fieldIndexes: [0] },
+  outputConfig: { format: 'png', compression: 'medium' }
 };
 
 let fonts = ['Arial', 'Georgia', 'Times New Roman', 'Verdana', 'Trebuchet MS', 'Courier New', 'Impact'];
+
+const JPG_LEVELS = [
+  { key: 'low', label: 'Bassa', quality: 0.92, hint: 'file più grandi, massima fedeltà.' },
+  { key: 'medium', label: 'Media', quality: 0.8, hint: 'compromesso tra dimensione e qualità.' },
+  { key: 'high', label: 'Alta', quality: 0.6, hint: 'file più leggeri, possibili aloni sui bordi del testo.' }
+];
+
+function jpgLevel(key) {
+  return JPG_LEVELS.find((level) => level.key === key) || JPG_LEVELS[1];
+}
 
 function createField(index, enabled = false) {
   return {
@@ -206,17 +217,36 @@ function modalNameConfig() {
   };
 }
 
+function modalOutputConfig() {
+  const level = JPG_LEVELS[Number($('#jpgQuality').value)] || JPG_LEVELS[1];
+  return {
+    format: $('#fileFormat').value === 'jpg' ? 'jpg' : 'png',
+    compression: level.key
+  };
+}
+
 function updateNamePreview() {
   const name = buildFileName(state.rows[0] || [], 0, modalNameConfig());
-  $('#namePreview').textContent = `Anteprima: ${name}.png`;
+  $('#namePreview').textContent = `Anteprima: ${name}.${modalOutputConfig().format}`;
+}
+
+function renderOutputOptions() {
+  const isJpg = $('#fileFormat').value === 'jpg';
+  const level = JPG_LEVELS[Number($('#jpgQuality').value)] || JPG_LEVELS[1];
+  $('#qualityRow').classList.toggle('hidden', !isJpg);
+  $('#qualityHint').textContent = `Compressione ${level.label.toLowerCase()}: ${level.hint}`;
+  updateNamePreview();
 }
 
 function openNameModal() {
   $('#filePrefix').value = state.fileNameConfig.prefix;
   $('#fileSuffix').value = state.fileNameConfig.suffix || '';
   $('#fileSeparator').value = state.fileNameConfig.separator;
+  $('#fileFormat').value = state.outputConfig.format;
+  const levelIndex = JPG_LEVELS.findIndex((level) => level.key === state.outputConfig.compression);
+  $('#jpgQuality').value = String(levelIndex < 0 ? 1 : levelIndex);
   renderNameFields();
-  updateNamePreview();
+  renderOutputOptions();
   $('#nameModal').classList.remove('hidden');
   setTimeout(() => $('#filePrefix').focus(), 0);
 }
@@ -227,6 +257,7 @@ function closeNameModal() {
 
 function confirmNameModal() {
   state.fileNameConfig = modalNameConfig();
+  state.outputConfig = modalOutputConfig();
   closeNameModal();
   generate();
 }
@@ -394,6 +425,8 @@ async function generate() {
   const button = $('#generate');
   button.disabled = true;
   button.textContent = 'GENERAZIONE…';
+  const { format, compression } = state.outputConfig;
+  const isJpg = format === 'jpg';
   try {
     const canvas = document.createElement('canvas');
     canvas.width = state.image.width;
@@ -402,13 +435,20 @@ async function generate() {
     const images = [];
     for (let index = 0; index < state.rows.length; index++) {
       context.clearRect(0, 0, canvas.width, canvas.height);
+      if (isJpg) {
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      }
       context.drawImage(state.image, 0, 0);
       state.fields.forEach((field, fieldIndex) => {
         if (field.enabled) drawText(context, state.rows[index][fieldIndex] || '', field, 1);
       });
-      images.push({ name: buildFileName(state.rows[index], index), dataUrl: canvas.toDataURL('image/png') });
+      const dataUrl = isJpg
+        ? canvas.toDataURL('image/jpeg', jpgLevel(compression).quality)
+        : canvas.toDataURL('image/png');
+      images.push({ name: buildFileName(state.rows[index], index), dataUrl });
     }
-    const count = await window.diplomi.saveImages(state.folder, images);
+    const count = await window.diplomi.saveImages(state.folder, images, format);
     toast(`${count} immagini create nella cartella selezionata.`);
   } catch (error) {
     console.error(error);
@@ -435,6 +475,8 @@ $('#generate').onclick = openNameModal;
 $('#filePrefix').oninput = updateNamePreview;
 $('#fileSuffix').oninput = updateNamePreview;
 $('#fileSeparator').onchange = updateNamePreview;
+$('#fileFormat').onchange = renderOutputOptions;
+$('#jpgQuality').oninput = renderOutputOptions;
 $('#closeNameModal').onclick = closeNameModal;
 $('#cancelGenerate').onclick = closeNameModal;
 $('#confirmGenerate').onclick = confirmNameModal;

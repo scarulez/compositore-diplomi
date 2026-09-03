@@ -38,6 +38,15 @@
       <div class="modal-label">Campi nel nome</div>
       <div id="nameFields" class="name-fields"></div>
       <p id="namePreview" class="name-preview"></p>
+      <div class="modal-grid">
+        <label><span>Formato</span><select id="fileFormat"><option value="png">PNG</option><option value="jpg">JPG</option></select></label>
+      </div>
+      <div id="qualityRow" class="quality-row hidden">
+        <span class="modal-label">Compressione JPG</span>
+        <input id="jpgQuality" type="range" min="0" max="2" step="1" value="1" aria-describedby="qualityHint">
+        <div class="range-ticks"><span>Bassa</span><span>Media</span><span>Alta</span></div>
+        <p id="qualityHint" class="quality-hint"></p>
+      </div>
       <div class="modal-actions">
         <button id="cancelGenerate" class="secondary" type="button">ANNULLA</button>
         <button id="confirmGenerate" class="primary" type="button">GENERA</button>

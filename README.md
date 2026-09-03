@@ -17,7 +17,8 @@ La composizione del nome dei file permette di scegliere prefisso, campi e separa
 - Posiziona i campi trascinandoli direttamente sull'anteprima.
 - Importa i dati da CSV o Excel (`.xlsx` e `.xls`).
 - Gestisce i ritorni a capo nei campi importati e li mantiene nelle immagini PNG generate.
-- Esporta un'immagine PNG per ogni riga di dati, con nome file componibile e non duplicato.
+- Esporta un'immagine per ogni riga di dati, con nome file componibile e non duplicato.
+- Sceglie il formato di uscita tra PNG (default) e JPG, con compressione bassa, media o alta.
 - Scarica dall'app un modello CSV o Excel pronto da compilare.
 
 ## Uso
@@ -32,6 +33,13 @@ La maschera di generazione usa `campo1` come default, ma puoi aggiungere un pref
 suffisso e uno o più campi al nome del file, scegliendo come separarli: spazio, trattino o
 underscore. Se un valore è vuoto viene saltato; se non rimane alcun valore viene generato un
 nome automatico.
+
+In fondo alla stessa maschera scegli il formato dei file generati. Il default è PNG, che
+conserva l'eventuale trasparenza del modello. Selezionando JPG compare uno slider per la
+compressione: **bassa** produce file più grandi con la massima fedeltà, **media** è un
+compromesso, **alta** genera file più leggeri ma può lasciare aloni attorno ai bordi del
+testo. Il JPG non supporta la trasparenza, quindi le aree trasparenti del modello vengono
+appiattite su sfondo bianco.
 
 ## Formato dei dati
 

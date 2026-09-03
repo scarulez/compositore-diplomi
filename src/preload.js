@@ -5,5 +5,5 @@ contextBridge.exposeInMainWorld('diplomi', {
   readFile: (filePath) => ipcRenderer.invoke('read-file', filePath),
   saveFile: (defaultPath, base64) => ipcRenderer.invoke('save-file', defaultPath, base64),
   getSystemFonts: () => ipcRenderer.invoke('get-system-fonts'),
-  saveImages: (folder, images) => ipcRenderer.invoke('save-images', folder, images)
+  saveImages: (folder, images, extension) => ipcRenderer.invoke('save-images', folder, images, extension)
 });
