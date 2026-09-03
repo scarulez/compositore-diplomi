@@ -6,7 +6,8 @@ Applicazione desktop Windows per creare in batch immagini di diplomi o attestati
 
 ![Interfaccia principale di Compositore Diplomi](docs/screenshots/app-principale.png)
 
-La composizione del nome dei file permette di scegliere prefisso, campi e separatore:
+La maschera di generazione permette di comporre il nome dei file con prefisso, suffisso, campi
+e separatore, e di scegliere il formato di uscita:
 
 ![Maschera per comporre il nome dei file generati](docs/screenshots/composizione-nome-file.png)
 
