@@ -1,8 +1,16 @@
 {
   "name": "compositore-diplomi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "App desktop Windows per generare diplomi personalizzati in batch.",
   "author": "Alessandro Fabiani",
+  "homepage": "https://github.com/scarulez/compositore-diplomi",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scarulez/compositore-diplomi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/scarulez/compositore-diplomi/issues"
+  },
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
