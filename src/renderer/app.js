@@ -8,7 +8,7 @@ const state = {
   selected: 0,
   zoom: 1,
   fields: [createField(0, true)],
-  fileNameConfig: { prefix: '', separator: ' ', fieldIndexes: [0] }
+  fileNameConfig: { prefix: '', suffix: '', separator: ' ', fieldIndexes: [0] }
 };
 
 let fonts = ['Arial', 'Georgia', 'Times New Roman', 'Verdana', 'Trebuchet MS', 'Courier New', 'Impact'];
@@ -19,6 +19,8 @@ function createField(index, enabled = false) {
     enabled,
     sample: index === 0 ? 'Nome e Cognome' : `Testo campo ${index + 1}`,
     font: index === 0 ? 'Georgia' : 'Arial',
+    bold: false,
+    italic: false,
     size: index === 0 ? 42 : 22,
     color: '#20243a',
     align: 'center',
@@ -66,6 +68,10 @@ function renderFields() {
         <input class="size" type="number" min="6" max="300" value="${field.size}" title="Dimensione">
         <input class="color" type="color" value="${field.color}" title="Colore">
       </div>
+      <div class="text-style" aria-label="Stile testo">
+        <button class="style ${field.bold ? 'active' : ''}" data-style="bold" type="button" title="Grassetto" aria-pressed="${field.bold}"><strong>B</strong></button>
+        <button class="style ${field.italic ? 'active' : ''}" data-style="italic" type="button" title="Corsivo" aria-pressed="${field.italic}"><em>I</em></button>
+      </div>
       <div class="align">${[['left', '≡'], ['center', '≡'], ['right', '≡']].map(([align, label]) => `<button class="al ${field.align === align ? 'active' : ''}" data-align="${align}" type="button" title="Allinea ${align}">${label}</button>`).join('')}</div>
     </div>
   `).join('');
@@ -100,6 +106,13 @@ function renderFields() {
       field.color = event.target.value;
       renderOverlays();
     };
+    card.querySelectorAll('.style').forEach((button) => {
+      button.onclick = () => {
+        field[button.dataset.style] = !field[button.dataset.style];
+        renderFields();
+        renderOverlays();
+      };
+    });
     card.querySelectorAll('.al').forEach((button) => {
       button.onclick = () => {
         field.align = button.dataset.align;
@@ -159,11 +172,13 @@ function selectedNameIndexes(config = state.fileNameConfig) {
 function buildFileName(row, index, config = state.fileNameConfig) {
   const parts = [];
   const prefix = String(config.prefix || '').trim();
+  const suffix = String(config.suffix || '').trim();
   if (prefix) parts.push(prefix);
   selectedNameIndexes(config).forEach((fieldIndex) => {
     const value = String(row[fieldIndex] ?? '').trim();
     if (value) parts.push(value);
   });
+  if (suffix) parts.push(suffix);
   return parts.join(config.separator) || `diploma_${index + 1}`;
 }
 
@@ -185,6 +200,7 @@ function modalNameConfig() {
   const fieldIndexes = [...document.querySelectorAll('#nameFields input:checked')].map((input) => Number(input.value));
   return {
     prefix: $('#filePrefix').value,
+    suffix: $('#fileSuffix').value,
     separator: $('#fileSeparator').value,
     fieldIndexes: fieldIndexes.length ? fieldIndexes : [0]
   };
@@ -197,6 +213,7 @@ function updateNamePreview() {
 
 function openNameModal() {
   $('#filePrefix').value = state.fileNameConfig.prefix;
+  $('#fileSuffix').value = state.fileNameConfig.suffix || '';
   $('#fileSeparator').value = state.fileNameConfig.separator;
   renderNameFields();
   updateNamePreview();
@@ -226,6 +243,7 @@ function renderOverlays() {
     Object.assign(element.style, {
       left: `${field.x}%`, top: `${field.y}%`, fontFamily: field.font,
       fontSize: `${scaledSize(field.size)}px`, color: field.color, textAlign: field.align,
+      fontWeight: field.bold ? '700' : '400', fontStyle: field.italic ? 'italic' : 'normal', lineHeight: '1.2',
       transform: field.align === 'center' ? 'translate(-50%,-50%)' : field.align === 'right' ? 'translate(-100%,-50%)' : 'translate(0,-50%)'
     });
     element.addEventListener('pointerdown', startDrag);
@@ -356,11 +374,19 @@ function refreshGenerate() {
 
 function drawText(context, text, field, scale) {
   context.save();
-  context.font = `${field.size * scale}px ${field.font}`;
+  const fontStyle = [field.italic ? 'italic' : '', field.bold ? 'bold' : ''].filter(Boolean).join(' ');
+  const fontSize = field.size * scale;
+  const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
+  const lineHeight = fontSize * 1.2;
+  const centerY = field.y / 100 * state.image.height;
+  context.font = `${fontStyle ? `${fontStyle} ` : ''}${fontSize}px ${field.font}`;
   context.fillStyle = field.color;
   context.textBaseline = 'middle';
   context.textAlign = field.align;
-  context.fillText(String(text || ''), field.x / 100 * state.image.width, field.y / 100 * state.image.height);
+  lines.forEach((line, index) => {
+    const y = centerY + (index - (lines.length - 1) / 2) * lineHeight;
+    context.fillText(line, field.x / 100 * state.image.width, y);
+  });
   context.restore();
 }
 
@@ -407,6 +433,7 @@ $('#downloadXlsx').onclick = () => downloadTemplate('xlsx');
 $('#chooseFolder').onclick = chooseFolder;
 $('#generate').onclick = openNameModal;
 $('#filePrefix').oninput = updateNamePreview;
+$('#fileSuffix').oninput = updateNamePreview;
 $('#fileSeparator').onchange = updateNamePreview;
 $('#closeNameModal').onclick = closeNameModal;
 $('#cancelGenerate').onclick = closeNameModal;

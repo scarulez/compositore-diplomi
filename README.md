@@ -13,9 +13,10 @@ La composizione del nome dei file permette di scegliere prefisso, campi e separa
 ## Funzionalità
 
 - Importa un modello immagine in formato PNG, JPG o WebP.
-- Configura un numero libero di campi di testo: posizione, font, dimensione, colore e allineamento.
+- Configura un numero libero di campi di testo: posizione, font, grassetto, corsivo, dimensione, colore e allineamento.
 - Posiziona i campi trascinandoli direttamente sull'anteprima.
 - Importa i dati da CSV o Excel (`.xlsx` e `.xls`).
+- Gestisce i ritorni a capo nei campi importati e li mantiene nelle immagini PNG generate.
 - Esporta un'immagine PNG per ogni riga di dati, con nome file componibile e non duplicato.
 - Scarica dall'app un modello CSV o Excel pronto da compilare.
 
@@ -25,17 +26,22 @@ La composizione del nome dei file permette di scegliere prefisso, campi e separa
 2. Aggiungi o rimuovi i campi desiderati, configurali e trascinali sull'anteprima per definirne la posizione.
 3. Importa il file dati oppure scarica uno dei modelli predisposti nell'app.
 4. Scegli la cartella di destinazione.
-5. Premi **GENERA IMMAGINI** e scegli prefisso, campi e separatore per il nome dei file.
+5. Premi **GENERA IMMAGINI** e scegli prefisso, suffisso, campi e separatore per il nome dei file.
 
-La maschera di generazione usa `campo1` come default, ma puoi aggiungere uno o più campi
-al nome del file e scegliere come separarli: spazio, trattino o underscore. Se un valore è
-vuoto viene saltato; se non rimane alcun valore viene generato un nome automatico.
+La maschera di generazione usa `campo1` come default, ma puoi aggiungere un prefisso, un
+suffisso e uno o più campi al nome del file, scegliendo come separarli: spazio, trattino o
+underscore. Se un valore è vuoto viene saltato; se non rimane alcun valore viene generato un
+nome automatico.
 
 ## Formato dei dati
 
 Il file CSV o Excel deve contenere nella prima riga le intestazioni delle colonne. L'app usa
 l'ordine delle colonne e adatta automaticamente il numero di campi visualizzati al numero di
 campi importati. I modelli scaricati dall'app usano le intestazioni `campo1`, `campo2`, ecc.
+
+Per inserire un testo su più righe nella stessa area del diploma, aggiungi un ritorno a capo
+nella cella: in Excel usa `Alt+Invio`; in un CSV il valore deve rimanere tra virgolette. Il
+ritorno a capo viene mantenuto sia nell'anteprima sia nel PNG generato.
 
 ```csv
 campo1,campo2

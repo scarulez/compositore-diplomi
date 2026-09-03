@@ -28,8 +28,10 @@
         <h3 id="nameModalTitle">Nome file generati</h3>
         <button id="closeNameModal" class="icon-button" type="button" title="Chiudi">×</button>
       </div>
-      <label class="modal-label" for="filePrefix">Prefisso</label>
-      <input id="filePrefix" class="modal-input" type="text" placeholder="Es. diploma">
+      <div class="modal-grid modal-name-parts">
+        <label><span>Prefisso</span><input id="filePrefix" type="text" placeholder="Es. diploma"></label>
+        <label><span>Suffisso</span><input id="fileSuffix" type="text" placeholder="Es. 2026"></label>
+      </div>
       <div class="modal-grid">
         <label><span>Separatore</span><select id="fileSeparator"><option value=" ">Spazio</option><option value="-">-</option><option value="_">_</option></select></label>
       </div>
